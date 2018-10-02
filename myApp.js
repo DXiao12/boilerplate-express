@@ -6,38 +6,70 @@ var app = express();
 
 
 // --> 11)  Mount the body-parser middleware  here
-
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended: false}));
 
 /** 1) Meet the node console. */
-
+console.log('Hello World');
 
 /** 2) A first working Express Server */
+app.get('/', (req, res) => res.sendFile(__dirname + '/views/index.html'));
 
 
 /** 3) Serve an HTML file */
 
 
 /** 4) Serve static assets  */
+app.use(express.static(__dirname + '/public'));
 
+app.use(function middleware(req, res, next) {
+  console.log(req.method + " " + req.path + " - " + req.ip);
+  next();
+});
 
 /** 5) serve JSON on a specific route */
-
+process.env.MESSAGE_STYLE="uppercase";
+app.get("/json", function(req, res) { 
+  let message = "Hello json";
+  
+  if (process.env.MESSAGE_STYLE == "uppercase") {
+    res.json({"message": message.toUpperCase()});
+  } else {
+    res.json({"message": message})
+  }
+});
 
 /** 6) Use the .env file to configure the app */
- 
+
  
 /** 7) Root-level Middleware - A logger */
 //  place it before all the routes !
 
 
 /** 8) Chaining middleware. A Time server */
-
+app.get("/now", function middleware(req, res, next) {
+        req.time = new Date().toString();
+        next();
+},
+  function (req, res) {
+    res.send({time: req.time});
+  });
 
 /** 9)  Get input from client - Route parameters */
-
+app.get("/:word/echo", function(req,res) {
+  res.send({echo: req.params.word});
+});
 
 /** 10) Get input from client - Query parameters */
 // /name?first=<firstname>&last=<lastname>
+ app.get("/name", function(req, res) {
+   let firstName = req.query.first;
+   let lastName = req.query.last;
+   let fullName = firstName + " " + lastName;
+   
+   res.send({ name: fullName});
+ });
+
 
   
 /** 11) Get ready for POST Requests - the `body-parser` */
@@ -45,7 +77,13 @@ var app = express();
 
 
 /** 12) Get data form POST  */
-
+app.post("/name", function(req, res) {
+  let firstName = req.body.first;
+  let lastName = req.body.last;
+  let fullName = firstName + " " + lastName;
+  
+  res.send({ name: fullName});
+});
 
 
 // This would be part of the basic setup of an Express app
